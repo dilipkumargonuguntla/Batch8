@@ -1,0 +1,73 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Mon Jan 08 08:30:14 IST 2024
+  Author:  dilip
+  Type: BPEL 2.0 Process
+  Purpose: One Way BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="DBDeleteBPEL"
+               targetNamespace="http://xmlns.oracle.com/Batch8/DBDeleteProj/DBDeleteBPEL"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/Batch8/DBDeleteProj/DBDeleteBPEL"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/Batch8/DBDeleteProj/DBDelete"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/db/top/DBDelete"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/Batch8/DBDeleteProj/DBDeleteBPEL" location="../WSDLs/DBDeleteBPEL.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      PARTNERLINKS                                                      
+      List of services participating in this BPEL process               
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="dbdeletebpel_client" partnerLinkType="client:DBDeleteBPEL" myRole="DBDeleteBPELProvider"/>
+    <partnerLink name="DBDelete" partnerLinkType="ns1:DBDelete_plt" partnerRole="DBDelete_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:DBDeleteBPELRequestMessage"/>
+    <variable name="Invoke_DBDelete_delete_InputVariable" messageType="ns1:EmpinfoCollection_msg"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in DBDeleteBPEL.wsdl) -->
+    <receive name="receiveInput" partnerLink="dbdeletebpel_client" portType="client:DBDeleteBPEL" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="Assign_Mapping">
+      <copy>
+        <from>$inputVariable.payload</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_DBDelete_delete_InputVariable.EmpinfoCollection</to>
+      </copy>
+    </assign>
+    <invoke name="Invoke_DBDelete" partnerLink="DBDelete" portType="ns1:DBDelete_ptt"
+            operation="delete" inputVariable="Invoke_DBDelete_delete_InputVariable" bpelx:invokeAsDetail="no"/>
+  </sequence>
+</process>

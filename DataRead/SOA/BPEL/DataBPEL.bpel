@@ -1,0 +1,57 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer
+
+  Created: Mon Dec 25 19:41:24 IST 2023
+  Author:  dilip
+  Type: BPEL 2.0 Process
+  Purpose: Empty BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="DataBPEL"
+               targetNamespace="http://xmlns.oracle.com/Batch8/DataRead/DataBPEL"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/Batch8/DataRead/DataBPEL"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/file/Batch8/DataRead/ReadFile"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/file/Batch8/DataRead/WriteFile"
+         xmlns:ui="http://xmlns.oracle.com/soa/designer">
+
+  <!--
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC
+     Set of activities coordinating the flow of messages across the
+     services integrated within this business process
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <import namespace="http://xmlns.oracle.com/pcbpel/adapter/file/Batch8/DataRead/ReadFile"
+          location="../WSDLs/ReadFile.wsdl" importType="http://schemas.xmlsoap.org/wsdl/" ui:processWSDL="true"/>
+  <partnerLinks>
+    <partnerLink name="ReadFile" partnerLinkType="ns1:Read_plt" myRole="Read_role"/>
+    <partnerLink name="WriteFile" partnerLinkType="ns2:Write_plt" partnerRole="Write_role"/>
+  </partnerLinks>
+  <variables>
+    <variable name="Receive_ReadFile_InputVariable" messageType="ns1:Read_msg"/>
+    <variable name="Invoke_WriteFile_InputVariable" messageType="ns2:Write_msg"/>
+    <variable name="Invoke_WriteFile_OutputVariable" messageType="ns2:Output_msg"/>
+  </variables>
+  <sequence name="main">
+    <receive name="Receive_ReadFile" createInstance="yes" partnerLink="ReadFile" portType="ns1:Read_ptt"
+             operation="Read" variable="Receive_ReadFile_InputVariable"/>
+    <assign name="Transformation1">
+      <bpelx:annotation>
+        <bpelx:pattern patternName="bpelx:transformation"></bpelx:pattern>
+      </bpelx:annotation>
+      <copy>
+        <from>ora:doXSLTransformForDoc("../Transformations/Transformation_Mapping.xsl", $Receive_ReadFile_InputVariable.body)</from>
+        <to variable="Invoke_WriteFile_InputVariable" part="body"/>
+      </copy>
+    </assign>
+    <invoke name="Invoke_WriteFile" partnerLink="WriteFile" portType="ns2:Write_ptt"
+            operation="Write" inputVariable="Invoke_WriteFile_InputVariable"
+            outputVariable="Invoke_WriteFile_OutputVariable" bpelx:invokeAsDetail="no"/>
+  </sequence>
+</process>

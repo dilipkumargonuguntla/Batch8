@@ -1,0 +1,66 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer
+
+  Created: Fri Jan 05 19:00:29 IST 2024
+  Author:  dilip
+  Type: BPEL 2.0 Process
+  Purpose: Empty BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="ConsumeMessageFromQueueBPEL"
+               targetNamespace="http://xmlns.oracle.com/Batch8/ConsumeMessageProj/ConsumeMessageFromQueueBPEL"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/Batch8/ConsumeMessageProj/ConsumeMessageFromQueueBPEL"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/jms/Batch8/ConsumeMessageProj/ConsumeMessage"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/file/Batch8/ConsumeMessageProj/WriteFile"
+         xmlns:ns3="http://xmlns.oracle.com/Batch8/PublishMessageIntoQueue/PublishMessageIntoQueueBPEL"
+         xmlns:ui="http://xmlns.oracle.com/soa/designer">
+
+  <!--
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC
+     Set of activities coordinating the flow of messages across the
+     services integrated within this business process
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <import namespace="http://xmlns.oracle.com/pcbpel/adapter/jms/Batch8/ConsumeMessageProj/ConsumeMessage"
+          location="../WSDLs/ConsumeMessage.wsdl" importType="http://schemas.xmlsoap.org/wsdl/" ui:processWSDL="true"/>
+  <partnerLinks>
+    <partnerLink name="ConsumeMessage" partnerLinkType="ns1:Consume_Message_plt" myRole="Consume_Message_role"/>
+    <partnerLink name="WriteFile" partnerLinkType="ns2:Write_plt" partnerRole="Write_role"/>
+  </partnerLinks>
+  <variables>
+    <variable name="Receive_ConsumeMessage_Consume_Message_InputVariable" messageType="ns1:Consume_Message_msg"/>
+    <variable name="Invoke_WriteFile_Write_InputVariable" messageType="ns2:Write_msg"/>
+  </variables>
+  <sequence name="main">
+    <receive name="Receive_ConsumeMessage" partnerLink="ConsumeMessage" portType="ns1:Consume_Message_ptt"
+             operation="Consume_Message" variable="Receive_ConsumeMessage_Consume_Message_InputVariable"
+             createInstance="yes"/>
+    <assign name="Assign_Mapping">
+      <copy>
+        <from>$Receive_ConsumeMessage_Consume_Message_InputVariable.body/ns3:ENO</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_WriteFile_Write_InputVariable.body/ns3:ENO</to>
+      </copy>
+      <copy>
+        <from>$Receive_ConsumeMessage_Consume_Message_InputVariable.body/ns3:ENAME</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_WriteFile_Write_InputVariable.body/ns3:ENAME</to>
+      </copy>
+      <copy>
+        <from>$Receive_ConsumeMessage_Consume_Message_InputVariable.body/ns3:ESAL</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_WriteFile_Write_InputVariable.body/ns3:ESAL</to>
+      </copy>
+      <copy>
+        <from>$Receive_ConsumeMessage_Consume_Message_InputVariable.body/ns3:ECITY</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke_WriteFile_Write_InputVariable.body/ns3:ECITY</to>
+      </copy>
+    </assign>
+    <invoke name="Invoke_WriteFile" partnerLink="WriteFile" portType="ns2:Write_ptt"
+            operation="Write" inputVariable="Invoke_WriteFile_Write_InputVariable" bpelx:invokeAsDetail="no"/>
+  </sequence>
+</process>

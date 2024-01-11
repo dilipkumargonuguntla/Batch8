@@ -1,0 +1,75 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Sat Dec 30 21:42:27 IST 2023
+  Author:  dilip
+  Type: BPEL 2.0 Process
+  Purpose: One Way BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="DBInsertdataBPEL"
+               targetNamespace="http://xmlns.oracle.com/Batch8/DBDatainsertData/DBInsertdataBPEL"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/Batch8/DBDatainsertData/DBInsertdataBPEL"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/Batch8/DBDatainsertData/DBInsertDatsa">
+
+  <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/Batch8/DBDatainsertData/DBInsertdataBPEL" location="../WSDLs/DBInsertdataBPEL.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      PARTNERLINKS                                                      
+      List of services participating in this BPEL process               
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="dbinsertdatabpel_client" partnerLinkType="client:DBInsertdataBPEL" myRole="DBInsertdataBPELProvider"/>
+    <partnerLink name="DBInsertDatsa" partnerLinkType="ns1:DBInsertDatsa_plt" partnerRole="DBInsertDatsa_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:DBInsertdataBPELRequestMessage"/>
+    <variable name="Invoke_DBInsertData_insert_InputVariable" messageType="ns1:EmpinfoCollection_msg"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in DBInsertdataBPEL.wsdl) -->
+    <receive name="receiveInput" partnerLink="dbinsertdatabpel_client" portType="client:DBInsertdataBPEL" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="Transformation_Mapping">
+      <bpelx:annotation>
+        <bpelx:pattern patternName="bpelx:transformation"></bpelx:pattern>
+      </bpelx:annotation>
+      <copy>
+        <from>ora:doXSLTransformForDoc("../Transformations/Transformation1_1.xsl", $inputVariable.payload)</from>
+        <to variable="Invoke_DBInsertData_insert_InputVariable" part="EmpinfoCollection"/>
+      </copy>
+    </assign>
+    <invoke name="Invoke_DBInsertData" partnerLink="DBInsertDatsa"
+            portType="ns1:DBInsertDatsa_ptt" operation="insert"
+            inputVariable="Invoke_DBInsertData_insert_InputVariable" bpelx:invokeAsDetail="no"/>
+  </sequence>
+</process>

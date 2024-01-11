@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://xmlns.oracle.com/Batch8/PublishMessageIntoQueue/PublishMessageIntoQueueBPEL"
+        xmlns="http://www.w3.org/2001/XMLSchema">
+  <element name="process">
+    <complexType>
+      <sequence>
+        <element name="ENO" type="string"/>
+        <element name="ENAME" type="string"/>
+        <element name="ESAL" type="string"/>
+        <element name="ECITY" type="string"/>
+      </sequence>
+    </complexType>
+  </element>
+</schema>

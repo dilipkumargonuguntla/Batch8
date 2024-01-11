@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://xmlns.oracle.com/Batch8/DBDatainsertData/DBInsertdataBPEL"
+        xmlns="http://www.w3.org/2001/XMLSchema">
+  <element name="process">
+    <complexType>
+      <sequence>
+        <element name="eno" type="string"/>
+        <element name="ename" type="string"/>
+        <element name="esal" type="string"/>
+        <element name="ecity" type="string"/>
+      </sequence>
+    </complexType>
+  </element>
+</schema>
